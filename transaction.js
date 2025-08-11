@@ -1,17 +1,10 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const cors = require('cors');
-const app = express();
-app.use(cors());
+const router = express.Router();
 
-const baseUri = 'mongodb://localhost:27017/payease'; // ✅ Fixed
 
-mongoose.connect(baseUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("Connected successfully"))
-.catch(err => console.log(err));
+
+
 
 // ✅ Schema
 const userTransactionSchema = new mongoose.Schema({
@@ -23,10 +16,10 @@ const userTransactionSchema = new mongoose.Schema({
 },{versionKey:false});
 
 // ✅ Model
-const transaction_model = mongoose.model('transaction', userTransactionSchema);
+const transaction_model = mongoose.models.transaction || mongoose.model('transaction', userTransactionSchema);
 
 // ✅ API route
-app.get('/transaction', async (req, res) => {
+router.get('/', async (req, res) => {
   const {transaction_id,
       sender_upi_id,
       receiver_upi_id,
@@ -51,6 +44,6 @@ app.get('/transaction', async (req, res) => {
   }
 });
 
-app.listen(9000, () => {
-  console.log("Listening on port 9000");
-});
+
+module.exports=router;
+

@@ -1,21 +1,10 @@
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
-
-const app = express();
-app.use(cors());
-app.use(express.json());
+const router=express.Router();
 
 const baseUri = 'mongodb://localhost:27017/payease';
 
-// ✅ Connect to MongoDB ONCE
-mongoose.connect(baseUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => console.log('✅ MongoDB Connected'))
-  .catch(err => console.error('❌ MongoDB Error:', err));
 
-// ✅ Schema: users -> chats -> number
 const chatSchema = new mongoose.Schema({
   number: String,   // chat with this number
   messages: [{message:String,send:String}] // store messages or objects
@@ -27,10 +16,11 @@ const userSchema = new mongoose.Schema({
   chats: [chatSchema] // array of chats
 });
 
-const User = mongoose.model('users', userSchema);
+const User = mongoose.models.users || mongoose.model('users', userSchema);
+
 
 // ✅ Add a chat route
-app.get('/chats_creation', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     // ✅ Read from query parameters, not body
     const { fromNumber, toNumber } = req.query;
@@ -64,6 +54,4 @@ app.get('/chats_creation', async (req, res) => {
 });
 
 
-app.listen(9000, () => {
-  console.log('🚀 Server started on port 9000');
-});
+module.exports=router;

@@ -1,36 +1,24 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const cors = require('cors');
 const crypto = require('crypto-js');
-
+const router = express.Router();
 require('dotenv').config();
 
-const app = express();
-app.use(cors());
+const key = process.env.KEY_FOR_ENCRYPTION_DECRYPTION;
 
-const key=process.env.KEY_FOR_ENCRYPTION_DECRYPTION;
-
-// ✅ MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/payease', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => console.error(err));
-
-// ✅ Schema
+// Schema
 const userAccountSchema = new mongoose.Schema({
   user_id: String,
   bank_name: String,
-  account_number: String, // This will store hashed account number
-  ifsc_code: String,      // This will store hashed IFSC code
+  account_number: String,
+  ifsc_code: String,
   last_four_digits: String
 }, { versionKey: false });
 
 const AccountModel = mongoose.model('bankAccount', userAccountSchema);
 
-// ✅ Route
-app.get('/transaction', async (req, res) => {
+// Create transaction
+router.get('/', async (req, res) => {
   try {
     const { user_id, bank_name, account_number, ifsc_code } = req.query;
 
@@ -38,18 +26,16 @@ app.get('/transaction', async (req, res) => {
       return res.status(400).send("❌ Missing required fields");
     }
 
-    // ✅ Extract last four digits safely
     const last_four_digits = account_number.slice(-4);
 
-    const hashed_account_number = await crypto.AES.encrypt(account_number,key).toString();
-    const hashed_ifsc_code =await crypto.AES.encrypt(ifsc_code,key).toString();
+    const encrypted_account_number = crypto.AES.encrypt(account_number, key).toString();
+    const encrypted_ifsc_code = crypto.AES.encrypt(ifsc_code, key).toString();
 
-    // ✅ Save to DB
     const newAccount = new AccountModel({
       user_id,
       bank_name,
-      account_number: hashed_account_number,
-      ifsc_code: hashed_ifsc_code,
+      account_number: encrypted_account_number,
+      ifsc_code: encrypted_ifsc_code,
       last_four_digits
     });
 
@@ -61,6 +47,27 @@ app.get('/transaction', async (req, res) => {
   }
 });
 
-app.listen(9000, () => {
-  console.log("🚀 Listening on port 9000");
+// Decrypt route for testing
+router.get('/decrypt', async (req, res) => {
+  try {
+    const { id } = req.query;
+    const account = await AccountModel.findById(id);
+    if (!account) return res.status(404).send("❌ Account not found");
+
+    const decrypted_account_number = crypto.AES.decrypt(account.account_number, key).toString(crypto.enc.Utf8);
+    const decrypted_ifsc_code = crypto.AES.decrypt(account.ifsc_code, key).toString(crypto.enc.Utf8);
+
+    res.json({
+      user_id: account.user_id,
+      bank_name: account.bank_name,
+      account_number: decrypted_account_number,
+      ifsc_code: decrypted_ifsc_code,
+      last_four_digits: account.last_four_digits
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Decryption failed");
+  }
 });
+
+module.exports = router;

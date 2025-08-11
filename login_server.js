@@ -1,31 +1,19 @@
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
 
-const app = express();
-app.use(cors());
+const router = express.Router();
 
-const baseUri = 'mongodb://localhost:27017/payease';
-
-// ✅ Connect to MongoDB once at startup
-mongoose.connect(baseUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ MongoDB Connected'))
-.catch(err => console.error('❌ MongoDB Error:', err));
-
+// Schema & Model
 const userSchema = new mongoose.Schema({
   name: String,
   number: String
 });
+const User = mongoose.models.users || mongoose.model('users', userSchema);
 
-const User = mongoose.model('users', userSchema);
-
-// ✅ Login Route
-app.get('/login', async (req, res) => {
+// Login Route
+router.get('/', async (req, res) => {
   try {
-    const { phone} = req.query; // read from URL query
+    const { phone } = req.query;
     if (!phone) {
       return res.status(400).send('Missing phone');
     }
@@ -43,6 +31,4 @@ app.get('/login', async (req, res) => {
   }
 });
 
-app.listen(9000, () => {
-  console.log('🚀 Server started on port 9000');
-});
+module.exports = router;
