@@ -19,7 +19,7 @@ const userTransactionSchema = new mongoose.Schema({
 const transaction_model = mongoose.models.transaction || mongoose.model('transaction', userTransactionSchema);
 
 // ✅ API route
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   const {transaction_id,
       sender_upi_id,
       receiver_upi_id,

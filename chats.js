@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.models.users || mongoose.model('users', userSchema);
 
 // ✅ Chats API
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { from_phone, to_phone, message } = req.query;
 

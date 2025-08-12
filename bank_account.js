@@ -18,7 +18,7 @@ const userAccountSchema = new mongoose.Schema({
 const AccountModel = mongoose.model('bankAccount', userAccountSchema);
 
 // Create transaction
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { user_id, bank_name, account_number, ifsc_code } = req.query;
 

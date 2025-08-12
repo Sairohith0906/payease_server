@@ -20,7 +20,7 @@ const User = mongoose.models.users || mongoose.model('users', userSchema);
 
 
 // ✅ Add a chat route
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     // ✅ Read from query parameters, not body
     const { fromNumber, toNumber } = req.query;

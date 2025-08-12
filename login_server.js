@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.models.users || mongoose.model('users', userSchema);
 
 // Login Route
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { phone } = req.query;
     if (!phone) {
